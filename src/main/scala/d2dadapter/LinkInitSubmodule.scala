@@ -196,13 +196,11 @@ class LinkInitSubmodule() extends Module {
         }
       }
     }.elsewhen(io.link_state === PhyState.active){
-      io.active_entry := true.B
+      // Link init complete — all outputs revert to defaults (false/nop).
+      // Reset state to INIT_START so that if link_state goes back to reset,
+      // init restarts cleanly instead of re-asserting INIT_DONE signals.
       io.linkinit_fdi_pl_state_sts := PhyState.active
-      io.linkinit_fdi_pl_rxactive_req := true.B
-      io.linkinit_fdi_pl_inband_pres := true.B
-      io.linkinit_rdi_lp_state_req := PhyStateReq.active
-      io.linkinit_sb_snd := SideBandMessage.NOP
-      linkinit_state_reg := LinkInitState.INIT_DONE
+      linkinit_state_reg := LinkInitState.INIT_START
     }.otherwise{
       linkinit_state_reg := LinkInitState.INIT_START
       io.active_entry := false.B
@@ -212,5 +210,10 @@ class LinkInitSubmodule() extends Module {
       io.linkinit_sb_snd := SideBandMessage.NOP
       param_exch_sbmsg_rcv_flag := false.B
       param_exch_sbmsg_snt_flag := false.B
+      active_sbmsg_req_rcv_flag := false.B
+      active_sbmsg_rsp_rcv_flag := false.B
+      active_sbmsg_ext_rsp_reg := false.B
+      active_sbmsg_ext_req_reg := false.B
+      transition_to_active_reg := false.B
     }
 }
